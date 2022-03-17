@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.fields.related import ForeignKey
+
+from crew.settings import AUTH_USER_MODEL
 
 
 class User(AbstractUser):
@@ -16,7 +19,29 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=False) 
 
     def __repr__(self):
-        return f"User(username={self.username}, full_name={self.full_name})"
+        return "User(username={}, full_name={}, email={})".format(
+                    self.username, self.full_name, self.email,
+                )
 
     def __str__(self):
         return self.username
+
+
+class EmailConfirmationCode(models.Model):
+    """
+    Class defines user-code, 
+    """
+
+    # TIME_TO_LIVE = 
+
+    user = models.OneToOneField(AUTH_USER_MODEL, 
+                                on_delete=models.CASCADE)
+    code = models.CharField(max_length=32, unique=True)
+
+    def is_active(self):
+        pass
+
+    def __repr__(self):
+        return "EmailConfirmationCode(username={})".format(
+                    self.user.username,
+                )

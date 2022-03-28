@@ -1,10 +1,9 @@
 from uuid import uuid4
 
-from django.core.mail import send_mail
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 
-from .models import EmailConfirmationCode
+from .models import EmailConfirmationCode, User
+from utils.email import send_crew_email
 
 
 def initiate_email_confirmation(user):
@@ -20,7 +19,7 @@ def initiate_email_confirmation(user):
 
     """
 
-    secret_code = _create_secret_code_for_user(user)
+    secret_code = EmailConfirmationCode.create_for_user(user)
     _send_secret_link_to_user(user, secret_code)
 
 
@@ -30,7 +29,9 @@ def _create_secret_code_for_user(user):
 
     secret_code = str(uuid4()).replace('-', '')
 
-    code_objects = EmailConfirmationCode(user=user, code=secret_code).save()
+    EmailConfirmationCode.objects.update_or_create(
+            user=user,
+            defaults={'code': secret_code})
 
     return secret_code
 
@@ -41,13 +42,7 @@ def _send_secret_link_to_user(user, secret_code):
     subject = "Подтверждение регистрации на crew.online"
     message = f"Перейдите по ссылке и аккаунт будет активирован: {secret_link}"
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
-    )
+    send_crew_email.delay([user.email], subject, message)
 
 
 def finish_email_confirmation(confirmation_code):
@@ -59,8 +54,24 @@ def finish_email_confirmation(confirmation_code):
     """
     user = get_object_or_404(EmailConfirmationCode, 
                              code=confirmation_code).user
-    user.is_active = True
+    user.activate()
     user.save()
 
     EmailConfirmationCode.objects.get(code=confirmation_code).delete()
 
+
+def get_user_by_email(email: str):
+    try:
+        user = User.objects.get(email=email)
+
+    except User.DoesNotExist:
+        raise Exception('no user with that nickname')
+
+    return user
+
+
+def send_login_code_to_user(user, code):
+    subject = 'Код подтверждения для входа'
+    message = f'Ваш код: {code}'
+
+    send_crew_email.delay([user.email], subject, message)

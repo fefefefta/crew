@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from users.models import LoginCode
 
-from users.views import UserRegistrationView, EmailConfirmationView
+from users.views import LoginView, UserRegistrationView, \
+    EmailConfirmationView, LoginView, LoginCodeView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,4 +26,6 @@ urlpatterns = [
     path('reg/confirmation/<confirmation_code>', 
          EmailConfirmationView.as_view(),
          name='email_confirmation'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('login/code/', LoginCodeView.as_view(), name='login_code'),
 ]

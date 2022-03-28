@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
 from pathlib import Path
-from django.conf.global_settings import AUTH_USER_MODEL
+from django.conf.global_settings import AUTH_USER_MODEL, AUTHENTICATION_BACKENDS
 
 from dotenv import load_dotenv
 
@@ -115,6 +115,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+AUTHENTICATION_BACKENDS = [
+    'users.auth_backend.PasswordlessAuthBackend',    
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
 DEFAULT_FROM_EMAIL = os.getenv('GMAIL_ACCOUNT')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -124,6 +130,8 @@ EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+BROKER_URL = 'redis://127.0.0.1:6379/0'
+BROKER_TRANSPORT = 'redis'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/

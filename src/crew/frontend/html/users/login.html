@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Регистрация</title>
+  </head>
+  <body>
+    <form action="{% url "login" %}" method="post">
+        {% csrf_token %}  
+      <input type="text" name="email" value="{{ email|default:"" }}" placeholder="your@gmail.com" class="login-email" required>
+      <button type="submit" class="button login-button" style="min-width: 200px;">🤙 Войти</button>
+    </form>
+    {% if email_not_confirmed %}
+    Сначала подтверди почту, письмо уже летит к тебе.
+    {% endif %}
+  </body>
+</html>
+

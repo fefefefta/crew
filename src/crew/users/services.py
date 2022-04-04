@@ -52,12 +52,12 @@ def finish_email_confirmation(confirmation_code):
     identified, raises 404.
 
     """
-    user = get_object_or_404(EmailConfirmationCode, 
-                             code=confirmation_code).user
+    user = EmailConfirmationCode.check_code(code=confirmation_code)
+
     user.activate()
     user.save()
 
-    EmailConfirmationCode.objects.get(code=confirmation_code).delete()
+    # TODO notification about user registration
 
 
 def get_user_by_email(email: str):

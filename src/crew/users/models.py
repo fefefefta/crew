@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from crew.settings import AUTH_USER_MODEL
@@ -10,9 +11,8 @@ from utils.stuff import random_number
 
 
 class User(AbstractUser):
-    """
-    User class.
-    """
+    """My passwordless User-model"""
+
     username = models.CharField(max_length=30, unique=True)
     full_name = models.CharField(max_length=40)
     email = models.EmailField(unique=True)
@@ -35,15 +35,17 @@ class User(AbstractUser):
 
 
 class EmailConfirmationCode(models.Model):
-    """
-    Class defines user-code, 
-    """ 
+    """Class defines an email confirmation code""" 
 
     user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE)
     code = models.CharField(max_length=32, unique=True)
 
     @classmethod
     def create_for_user(cls, user):
+        """It creates secret_code by uuid4 for taken User instance, then create 
+        EmailConfirmationCode object or update existing for user and returns
+        secret_code"""
+
         secret_code = str(uuid4()).replace('-', '')
 
         cls.objects.update_or_create(
@@ -52,6 +54,19 @@ class EmailConfirmationCode(models.Model):
 
         return secret_code
 
+    @classmethod
+    def check_code(cls, code):
+        """
+        It takes confirmation code, returns a user from EmailConfirmationCode 
+        instance if it exists and delete that instance
+        """
+
+        user = get_object_or_404(EmailConfirmationCode, code=code).user
+        EmailConfirmationCode.objects.get(code=code).delete()
+
+        return user
+
+
     def __repr__(self):
         return "EmailConfirmationCode(username={})".format(
                     self.user.username,
@@ -59,6 +74,18 @@ class EmailConfirmationCode(models.Model):
 
 
 class LoginCode(models.Model):
+    """
+    Class defines a code being mailed to user to log in
+    
+    Attributes
+        code: n-digit random code. n is a CODE_LENGTH constant
+        user: an instance of the User model for which a login code is created
+        created_at: datetime of creating
+        expires_at: created_at + TIME_TO_LIVE constant
+        attempts: code entry attempt counter, not code request counter    
+
+    """
+
     ATTEMPTS_LIMIT = 3
     CODE_REQUESTING_LIMIT = 5
 
@@ -92,6 +119,10 @@ class LoginCode(models.Model):
 
     @classmethod
     def check_code(cls, user: User, code: str):
+        """Compare last created code for user with taken code. If equal then it
+        delete all LoginCodes for user and return that user. If not or if 
+        some conditions not met then raise exceptions"""
+        
         last_code = cls._get_last_codes(user).first()
 
         if not last_code:
@@ -110,6 +141,9 @@ class LoginCode(models.Model):
 
     @classmethod
     def _get_last_codes(cls, user: User):
+        """Takes User instance and returns recently created LoginCode 
+           instances for user"""
+
         return cls.objects.filter(
                 user=user, 
                 created_at__gte=timezone.now() - cls.TIME_TO_LIVE

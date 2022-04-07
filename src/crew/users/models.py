@@ -25,6 +25,24 @@ class User(AbstractUser):
     def activate(self):
         self.is_active = True
 
+    @classmethod
+    def get_user_by_email(cls, email: str):
+        try:
+            user = cls.objects.get(email=email)
+        except cls.DoesNotExist:
+            raise Exception('no user with that email')
+
+        return user
+
+    @classmethod
+    def get_user_by_username(cls, username: str):
+        try:
+            user = cls.objects.get(username=username)
+        except cls.DoesNotExist:
+            raise Exception('no user with that username')
+
+        return user    
+
     def __repr__(self):
         return "User(username={}, full_name={}, email={})".format(
                     self.username, self.full_name, self.email,
@@ -65,7 +83,6 @@ class EmailConfirmationCode(models.Model):
         EmailConfirmationCode.objects.get(code=code).delete()
 
         return user
-
 
     def __repr__(self):
         return "EmailConfirmationCode(username={})".format(

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+
+{% if requesting_user.is_staff %}
+	U r moderator. U have a power.
+{% endif %}
+
+{% if requesting_user == user %}
+	<a href="{% url 'profile_edit' requesting_user.username %}">Редактировать профиль</a>
+{% endif %}
+
+<h1>{{ user.username }}</h1>
+<h2>{{ user.full_name }}</h2>
+<p>
+	{{ user.bio }}
+</p>
+
+</body>
+</html>

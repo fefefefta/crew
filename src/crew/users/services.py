@@ -1,8 +1,6 @@
 from uuid import uuid4
 
-from django.shortcuts import get_object_or_404
-
-from .models import EmailConfirmationCode, User
+from .models import EmailConfirmationCode
 from utils.email import send_crew_email
 
 
@@ -58,16 +56,6 @@ def finish_email_confirmation(confirmation_code):
     user.save()
 
     # TODO notification about user registration
-
-
-def get_user_by_email(email: str):
-    try:
-        user = User.objects.get(email=email)
-
-    except User.DoesNotExist:
-        raise Exception('no user with that nickname')
-
-    return user
 
 
 def send_login_code_to_user(user, code):

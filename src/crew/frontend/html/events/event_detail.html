@@ -1,0 +1,15 @@
+<h1>{{ event.title }}</h1>
+
+<p>{{ event.text }}</p>
+
+{% if user.username == event.author.username or user.is_staff %}
+<a href="{% url 'event_edit' event.pk %}">Редактировать пост</a>
+{% endif %}
+
+<p>Price: {{ event.price }}</p>
+<p>Max Participant: {{ event.participants_limit }}</p>
+<p>chat: {{ event.link_to_chat }}</p>
+<p>date: {{ event.event_date | date }}</p>
+
+<p>Host: {{ event.author.username }}</p>
+<small>publication date: {{event.publication_date}}</small>

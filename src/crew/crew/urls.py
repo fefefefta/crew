@@ -20,21 +20,39 @@ from users.models import LoginCode
 
 from users.views import LoginView, UserRegistrationView, \
     EmailConfirmationView, LoginView, LoginCodeView, UserProfileView, \
-    LogoutView
+    UserProfileEditView, LogoutView
+from events.views import FeedView, EventDetailView, EventCreateView, \
+    EventEditView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # registration
     path('reg/', UserRegistrationView.as_view(), name='registration'),
-    path('reg/confirmation/<confirmation_code>', 
+    path('reg/confirmation/<confirmation_code>/', 
          EmailConfirmationView.as_view(),
          name='email_confirmation'),
-
+    # login
     path('login/', LoginView.as_view(), name='login'),
     path('login/code/', LoginCodeView.as_view(), name='login_code'),
     path('logout/', LogoutView.as_view(), name='logout'),
-
+    # users
     path('user/<username>/',
          login_required(UserProfileView.as_view()),
          name='profile'),
+    path('user/<username>/edit/',
+         login_required(UserProfileEditView.as_view()),
+         name='profile_edit'),
+    # events
+    path('', FeedView.as_view(), name=''),
+    path('events/', FeedView.as_view(), name='events'),
+    path('events/<int:pk>/', 
+         login_required(EventDetailView.as_view()), 
+         name='event'),
+    path('events/new/', 
+         login_required(EventCreateView.as_view()), 
+         name='event_new'),
+    path('events/<int:pk>/edit/',
+         login_required(EventEditView.as_view()),
+         name='event_edit'),
 ]

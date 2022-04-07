@@ -94,7 +94,7 @@ _______________________________________________________________________________
   
 По разработке. 
 
-Стэк: Django, django-rest-framework, PostgreSQL, nginx
+Стэк: Django, django-rest-framework, PostgreSQL, Celery, Redis, nginx
 
 
 Приложения django:

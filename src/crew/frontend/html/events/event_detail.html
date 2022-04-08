@@ -2,8 +2,12 @@
 
 <p>{{ event.text }}</p>
 
-{% if user.username == event.author.username or user.is_staff %}
+{% if user.username == event.author.username %}
 <a href="{% url 'event_edit' event.pk %}">Редактировать пост</a>
+{% endif %}
+
+{% if user.is_staff and not event.is_approved %}
+	<a href="{% url 'event_approve' event.pk %}">Одобрить пост</a>
 {% endif %}
 
 <p>Price: {{ event.price }}</p>

@@ -102,6 +102,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CREW_DOMAIN = '127.0.0.1:8000'
 
 AUTH_USER_MODEL = 'users.User'
 

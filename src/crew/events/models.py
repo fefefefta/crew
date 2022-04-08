@@ -1,6 +1,8 @@
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
+from crew.settings import CREW_DOMAIN
 from users.models import User
 
 
@@ -26,9 +28,21 @@ class Event(models.Model):
     publication_date = models.DateField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
 
+    def get_link_to_event(self):
+        """Return absolute link to event"""
+        relative_link_to_event = reverse('event', args=[self.pk])
+        absolite_link_to_event = f"{CREW_DOMAIN}{relative_link_to_event}"
+
+        return absolite_link_to_event
+    
+    @classmethod
+    def get_by_pk(cls, pk):
+        return cls.objects.get(pk=pk)
+
     def approve(self):
         self.is_approved = True
         self.publication_date = timezone.now()
+        self.save()
 
     def __repr__(self):
         return f'Event({self.title}, pk={self.pk})'

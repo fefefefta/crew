@@ -27,6 +27,7 @@ class Event(models.Model):
 
     publication_date = models.DateField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    is_already_declined = models.BooleanField(default=False)
 
     def get_link_to_event(self):
         """Return absolute link to event"""
@@ -34,6 +35,9 @@ class Event(models.Model):
         absolite_link_to_event = f"{CREW_DOMAIN}{relative_link_to_event}"
 
         return absolite_link_to_event
+
+    def get_event_author(self):
+        return self.author
     
     @classmethod
     def get_by_pk(cls, pk):
@@ -41,7 +45,13 @@ class Event(models.Model):
 
     def approve(self):
         self.is_approved = True
+        self.is_already_declined = False
         self.publication_date = timezone.now()
+        self.save()
+
+    def decline(self):
+        self.is_approved = False
+        self.is_already_declined = True
         self.save()
 
     def __repr__(self):

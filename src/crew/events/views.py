@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView 
+from django.contrib.auth.decorators import login_required
 
 from .models import Event
-from .services import notify_staff_to_publish
+from .services import notify_staff_to_publish, notify_user_publication_decision
+from utils.decorators import staff_only
 
 
 class FeedView(ListView):
@@ -61,10 +63,30 @@ class EventEditView(UpdateView):
         raise Exception('u r not allowed to be here zhulic')
 
 
+@staff_only
 def event_approve(request, pk):
     event = Event.get_by_pk(pk)
-    if request.user.is_staff and not event.is_approved:
+    if not event.is_approved:
         event.approve()
+
+        notify_user_publication_decision(event)
+        
         return redirect('event', pk)
 
     raise Exception('u r not allowed to be here zhulic')
+
+
+@staff_only
+def event_decline(request, pk):
+    event = Event.get_by_pk(pk)
+    
+    if request.method == 'GET':
+        return render(request, 'events/event_decline.html', {'event': event})
+   
+    if not event.is_already_declined:
+        event.decline()
+        
+        comment = request.POST.get('comment')
+        notify_user_publication_decision(event, comment=comment)
+
+    return redirect('event', pk)

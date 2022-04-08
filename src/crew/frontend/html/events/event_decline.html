@@ -1,0 +1,5 @@
+<form action="{% url "event_decline" event.pk %}" method="post">
+        {% csrf_token %}  
+      <input type="text" name="comment" value="" placeholder="Введи причину отказа" required>
+      <button type="submit" style="min-width: 200px;">🤙 Отправить</button>
+</form>

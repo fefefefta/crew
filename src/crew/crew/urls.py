@@ -22,7 +22,7 @@ from users.views import LoginView, UserRegistrationView, \
     EmailConfirmationView, LoginView, LoginCodeView, UserProfileView, \
     UserProfileEditView, LogoutView
 from events.views import FeedView, EventDetailView, EventCreateView, \
-    EventEditView, event_approve
+    EventEditView, event_approve, event_decline
 
 
 urlpatterns = [
@@ -55,7 +55,10 @@ urlpatterns = [
     path('events/<int:pk>/edit/',
          login_required(EventEditView.as_view()),
          name='event_edit'),
-    path('events/<int:pk>/approve',
+    path('events/<int:pk>/approve/',
          event_approve,
          name='event_approve'),
+    path('events/<int:pk>/decline/',
+         event_decline,
+         name='event_decline'),
 ]

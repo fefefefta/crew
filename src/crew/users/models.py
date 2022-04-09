@@ -3,10 +3,11 @@ from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, reverse
 from django.utils import timezone
 
-from crew.settings import AUTH_USER_MODEL
+from crew.settings import AUTH_USER_MODEL, CREW_DOMAIN, STATUS_ON_MODERATION, \
+    STATUS_APPROVED, STATUS_DECLINED
 from utils.stuff import random_number
 
 
@@ -19,12 +20,28 @@ class User(AbstractUser):
     bio = models.TextField(null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
     is_active = models.BooleanField(default=False) 
+    moderation_status = models.CharField(
+        max_length=32,
+        default=STATUS_ON_MODERATION,
+    )
 
     def activate(self):
         self.is_active = True
+    
+    def get_link_to_user(self):
+        """Return absolute link to user"""
+        relative_link_to_user = reverse('user', args=[self.username])
+        absolite_link_to_user = f"{CREW_DOMAIN}{relative_link_to_user}"
 
+        return absolite_link_to_user
+
+    def is_approved(self):
+        return True if self.moderation_status == STATUS_APPROVED else False
+
+    def is_declined(self):
+        return True if self.moderation_status == STATUS_DECLINED else False
+ 
     @classmethod
     def get_user_by_email(cls, email: str):
         try:
@@ -42,6 +59,14 @@ class User(AbstractUser):
             raise Exception('no user with that username')
 
         return user    
+    
+    def approve(self):
+        self.moderation_status = STATUS_APPROVED
+        self.save()
+
+    def decline(self):
+        self.moderation_status = STATUS_DECLINED
+        self.save()
 
     def __repr__(self):
         return "User(username={}, full_name={}, email={})".format(

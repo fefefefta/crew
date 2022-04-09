@@ -19,8 +19,8 @@ from django.urls import path, include
 from users.models import LoginCode
 
 from users.views import LoginView, UserRegistrationView, \
-    EmailConfirmationView, LoginView, LoginCodeView, UserProfileView, \
-    UserProfileEditView, LogoutView
+    EmailConfirmationView, LoginView, LoginCodeView, UserDetailView, \
+    UserProfileEditView, LogoutView, user_approve, user_decline
 from events.views import FeedView, EventDetailView, EventCreateView, \
     EventEditView, event_approve, event_decline
 
@@ -38,11 +38,17 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     # users
     path('user/<username>/',
-         login_required(UserProfileView.as_view()),
+         login_required(UserDetailView.as_view()),
          name='profile'),
     path('user/<username>/edit/',
          login_required(UserProfileEditView.as_view()),
          name='profile_edit'),
+    path('user/<username>/approve/',
+         user_approve,
+         name='user_approve'),
+    path('user/<username>/decline/',
+         user_decline,
+         name='user_decline'),
     # events
     path('', FeedView.as_view(), name=''),
     path('events/', FeedView.as_view(), name='events'),

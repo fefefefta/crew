@@ -55,7 +55,7 @@ def finish_email_confirmation(confirmation_code):
     user.activate()
     user.save()
 
-    # TODO notification about user registration
+    return user
 
 
 def send_login_code_to_user(user, code):

@@ -4,12 +4,14 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 
 from .models import Event
-from .services import notify_staff_to_publish, notify_user_publication_decision
+from utils.notifications import notify_staff_to_publish, notify_user_publication_decision
+from crew.settings import STATUS_ON_MODERATION, STATUS_APPROVED, \
+    STATUS_DECLINED
 from utils.decorators import staff_only
 
 
 class FeedView(ListView):
-    queryset = Event.objects.filter(is_approved=True)
+    queryset = Event.objects.filter(moderation_status=STATUS_APPROVED)
     template_name = 'events/feed.html'
 
 
@@ -24,7 +26,8 @@ class EventDetailView(DetailView):
 
     def get_object(self):
         event = super().get_object()
-        if event.is_approved or self.request.user.is_staff:
+        if (event.is_approved() or self.request.user.is_staff 
+                or self.request.user == event.author):
             return event
 
         raise Exception('u r not allowed to be here zhulic')
@@ -57,16 +60,25 @@ class EventEditView(UpdateView):
 
     def get_object(self):
         event = super().get_object()
-        if event.author == self.request.user:
+        if event.author == self.request.user and not event.is_on_moderation():
             return event
 
         raise Exception('u r not allowed to be here zhulic')
+
+    def form_valid(self, form):
+       self.object = form.save(commit=False)
+       self.object.moderation_status = STATUS_ON_MODERATION
+       self.object.save()
+
+       notify_staff_to_publish(self.object)
+
+       return super().form_valid(form)
 
 
 @staff_only
 def event_approve(request, pk):
     event = Event.get_by_pk(pk)
-    if not event.is_approved:
+    if not event.is_approved():
         event.approve()
 
         notify_user_publication_decision(event)
@@ -83,7 +95,7 @@ def event_decline(request, pk):
     if request.method == 'GET':
         return render(request, 'events/event_decline.html', {'event': event})
    
-    if not event.is_already_declined:
+    if not event.is_declined():
         event.decline()
         
         comment = request.POST.get('comment')

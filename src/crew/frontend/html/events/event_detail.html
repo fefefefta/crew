@@ -6,8 +6,12 @@
 <a href="{% url 'event_edit' event.pk %}">Редактировать пост</a>
 {% endif %}
 
-{% if user.is_staff and not event.is_approved %}
-	<a href="{% url 'event_approve' event.pk %}">Одобрить пост</a>
+{% if user.is_staff and event.moderation_status != 'approved' %}
+	<a href="{% url 'event_approve' event.pk %}">Одобрить событие</a>
+{% endif %}
+
+{% if user.is_staff and event.moderation_status != 'declined' %}
+	<a href="{% url 'event_decline' event.pk %}">Отклонить событие</a>
 {% endif %}
 
 <p>Price: {{ event.price }}</p>
@@ -17,3 +21,13 @@
 
 <p>Host: {{ event.author.username }}</p>
 <small>publication date: {{event.publication_date}}</small>
+
+{% if event.moderation_status == 'on_moderation' %}
+	<small>Статус: проходит модерацию.</small>
+{% endif %}
+
+{% if event.moderation_status == 'declined' %}
+	<small>Статус: не прошел модерацию. 
+		   У вас на почте комментарий от модератора. 
+	       Отредактируйте в соответствии с ним</small>
+{% endif %}

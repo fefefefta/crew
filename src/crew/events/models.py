@@ -22,7 +22,7 @@ class Event(models.Model):
         blank=True, 
         verbose_name='price in rubles',
         null=True
-    )
+        )
     link_to_chat = models.URLField(blank=True, null=True)
     event_date = models.DateTimeField()
 

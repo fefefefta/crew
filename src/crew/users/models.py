@@ -29,9 +29,12 @@ class User(AbstractUser):
     def activate(self):
         self.is_active = True
     
+    def deactivate(self):
+        self.is_active = False
+    
     def get_link_to_user(self):
         """Return absolute link to user"""
-        relative_link_to_user = reverse('user', args=[self.username])
+        relative_link_to_user = reverse('profile', args=[self.username])
         absolite_link_to_user = f"{CREW_DOMAIN}{relative_link_to_user}"
 
         return absolite_link_to_user
@@ -41,6 +44,10 @@ class User(AbstractUser):
 
     def is_declined(self):
         return True if self.moderation_status == STATUS_DECLINED else False
+
+    def is_on_moderation(self):
+        return (True if self.moderation_status == STATUS_ON_MODERATION 
+                    else False)
  
     @classmethod
     def get_user_by_email(cls, email: str):

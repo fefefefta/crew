@@ -10,7 +10,9 @@ from .forms import UserRegistrationForm
 from .models import LoginCode, User
 from .services import initiate_email_confirmation, finish_email_confirmation, \
     send_login_code_to_user
-from utils.notifications import notify_staff_approve_user
+from crew.settings import STATUS_ON_MODERATION    
+from utils.notifications import notify_staff_approve_user, \
+    notify_user_profile_approve_decision
 from utils.decorators import staff_only
 
 
@@ -23,7 +25,8 @@ class UserRegistrationView(FormView):
 
     def form_valid(self, form):
         user = form.save()
-
+        
+        notify_staff_approve_user(user)
         # Creating user-code object and sending letter to user email
         initiate_email_confirmation(user)
         return super().form_valid(form)
@@ -42,7 +45,6 @@ class EmailConfirmationView(View):
         # Turning user.is_active on True and deleting user-code object
         user = finish_email_confirmation(confirmation_code)
         
-        notify_staff_approve_user(user)
         return HttpResponse("Почта подтверждена.")
 
 
@@ -94,17 +96,6 @@ class LogoutView(View):
         return redirect('login')
 
 
-#class UserProfileView(View):
-#    def get(self, request, username: str):
-#        if username == 'me':
-#            return redirect('profile', request.user.username)
-
-#        user = User.get_user_by_username(username)
-#        return render(request, 'users/profile.html', {
-#                'user': user,
-#                'requesting_user': request.user,
-#           })
-
 class UserDetailView(DetailView):
     model = User
     object_context_name = 'user'
@@ -129,18 +120,35 @@ class UserDetailView(DetailView):
 
         raise Exception('u r not allowed to be here zhulic')
 
+
 class UserProfileEditView(UpdateView):
     model = User
-    fields = ['full_name', 'bio']
+    object_context_name ='user'
+    fields = ['full_name', 'email', 'bio']
     template_name = 'users/profile_edit.html'
     success_url = '/user/me'
 
     def get_object(self):
         user = User.get_user_by_username(self.kwargs.get('username'))
-        if user.username == self.request.user.username:
+        if user == self.request.user and not user.is_on_moderation():
             return user
 
         raise Exception('u r not allowed to be here zhulic')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.moderation_status = STATUS_ON_MODERATION
+        self.object.save()
+
+        notify_staff_approve_user(self.object)
+
+        if 'email' in form.changed_data:
+            self.object.deactivate()
+            initiate_email_confirmation(self.object)
+            logout(self.request)
+            return redirect('login')
+
+        return super().form_valid(form)
 
 
 @staff_only
@@ -149,7 +157,7 @@ def user_approve(request, username):
     if not user.is_approved():
         user.approve()
 
-        #notify_user_publication_decision(event)
+        notify_user_profile_approve_decision(user)
         
         return redirect('profile', username)
 
@@ -167,6 +175,6 @@ def user_decline(request, username):
         user.decline()
         
         comment = request.POST.get('comment')
-        #notify_user_publication_decision(event, comment=comment)
+        notify_user_profile_approve_decision(user, comment=comment)
 
     return redirect('profile', username)   

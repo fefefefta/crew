@@ -1,3 +1,4 @@
+from django.core.mail import message
 from users.models import User
 from .email import send_crew_email
 
@@ -45,3 +46,21 @@ def notify_staff_approve_user(user):
     message = f'Проверь профиль чувака(ихи): {absolute_link_to_user}'
 
     _notify_staff(subject, message)
+
+
+def notify_user_profile_approve_decision(user, comment=''):
+    absolute_link_to_user = user.get_link_to_user()
+
+    recipient = user.email
+
+    if comment:
+        subject = 'Ваш профиль на crew.online был отклонен:('
+        message = f'''Нашим модераторам чем-то не понравился ваш профиль.
+        Комментарий: {comment}
+        Отредактируйте профиль: {absolute_link_to_user}'''
+    else:
+        subject = 'Ваш профиль прошел модерацию на crew.online'
+        message = f'''Поздравляем! Теперь заходите и ищите новую компанию!
+        Ваш профиль: {absolute_link_to_user}'''
+
+    send_crew_email.delay([recipient], subject, message)

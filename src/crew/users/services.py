@@ -21,19 +21,6 @@ def initiate_email_confirmation(user):
     _send_secret_link_to_user(user, secret_code)
 
 
-def _create_secret_code_for_user(user):
-
-    # TODO: добавить обработку по времени действия кода
-
-    secret_code = str(uuid4()).replace('-', '')
-
-    EmailConfirmationCode.objects.update_or_create(
-            user=user,
-            defaults={'code': secret_code})
-
-    return secret_code
-
-
 def _send_secret_link_to_user(user, secret_code):
     secret_link = f"http://127.0.0.1:8000/reg/confirmation/{secret_code}"
 

@@ -1,43 +1,57 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title></title>
-</head>
-<body>
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
 
 {% if request_user.is_staff %}
 	U r moderator. U have a power.
 {% endif %}
 
-{% if request_user == user %}
-	<a href="{% url 'profile_edit' request_user.username %}">Редактировать профиль</a>
-{% endif %}
+<div class="main">
+	<div class="container">
+		<div class="main-content">	
 
-{% if request_user.is_staff and user.moderation_status != 'approved' %}
-	<a href="{% url 'user_approve' user.username %}">Одобрить профиль</a>
-{% endif %}
+			<div class="profile-info-block">
+				<div class="info-fullname">{{ user.full_name }}</div>
+				<div class="info-username">@{{ user.username }}</div>
+				{% if request_user == user %}
+					<a href="{% url 'profile_edit' request_user.username %}"><button class="button profile-button">Редактировать профиль</button></a>
+				{% endif %}
+			</div>
 
-{% if request_user.is_staff and user.moderation_status != 'declined' %}
-	<a href="{% url 'user_decline' user.username %}">Отправить на доработку</a>
-{% endif %}
+			<div class="profile-bio-block">
+				{{ user.bio }}
+			</div>
+			<!-- <div class="bio-text"></div> -->
 
-<h1>{{ user.username }}</h1>
-<h2>{{ user.full_name }}</h2>
-<p>
-	{{ user.bio }}
-</p>
+			{% if request_user.is_staff and user.moderation_status != 'approved' %}
+				<a href="{% url 'user_approve' user.username %}"><button class="button profile-button">Одобрить профиль</button></a>
+				<div></div>
+			{% endif %}
 
-{% if user.moderation_status == 'on_moderation' %}
-	<small>Статус: проходит модерацию.</small>
-{% endif %}
+			{% if request_user.is_staff and user.moderation_status != 'declined' %}
+				<a href="{% url 'user_decline' user.username %}"><button class="button profile-button">Отправить на доработку</button></a>
+				<div></div>
+			{% endif %}
 
-{% if user.moderation_status == 'declined' %}
-	<small>Статус: не прошел модерацию. 
-		   У вас на почте комментарий от модератора. 
-	       Отредактируйте в соответствии с ним</small>
-{% endif %}
+			{% if user.moderation_status == 'on_moderation' %}
+			<button class="error message">Статус: проходит модерацию.</button>
+			<div></div>
+			{% endif %}
 
-</body>
-</html>
+			{% if user.moderation_status == 'declined' %}
+				<button class="error profile-message">Статус: не прошел модерацию.<br>
+		   		У вас на почте комментарий от модератора. <br>
+	       	Отредактируйте в соответствии с ним</button>
+	      <div></div>
+			{% endif %}
+
+			<div class="profile-events-list">
+				
+			</div>
+
+		</div>
+	</div>
+</div>
+
+{% endblock %}

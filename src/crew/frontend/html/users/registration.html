@@ -1,14 +1,46 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Регистрация</title>
-  </head>
-  <body>
-    <form action="" method="post">
-      {% csrf_token %}
-      <!-- as_p для того, чтобы каждый элемент формы был с новой строки -->
-      {{ form.as_p }}
-      <button type="submit">Зарегистрироваться</button>
-    </form>
-  </body>
-</html>
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="main">
+    <div class="container">
+      <div class="main-content">
+        <img src="{% static 'img/registration_image.png' %}" class="registration-image">
+
+        <form class="registration-form" action="" method="post">
+          <!-- <div class="registartion-contacts-and-photo"> 
+
+            <div class="registration-contacts">
+              <input class="registration-field email-field" type="text" name="email" required placeholder="email">
+              <input class="registration-field username-field" type="text" name="username" required placeholder="username">
+              <input class="registration-field fullname-field" type="text" name="fullname" required placeholder="имя или псевдоним">
+            </div>
+
+            <label for="registration-photo" class="button choose-registration-photo">📸</label>
+            <input class="registration-photo" id="registration-photo" type="file" name="avatar" accept="image/png, image/jpeg, image/gif">
+          </div>
+
+          <input class="registration-bio" type="text" name="bio" required placeholder="напишите о себе">
+          <button type="submit" class="button registration-button">отправить на модерацию</button> -->
+        {% csrf_token %}
+        <div class="registartion-contacts-and-photo">
+          <div class="registration-contacts">
+            {{ form.email }}
+            {{ form.full_name }}            
+            {{ form.username }}
+          </div>
+
+          <label for="registration-photo" class="button choose-registration-photo">📸</label>
+          <input class="registration-photo" id="registration-photo" type="file" name="avatar" accept="image/png, image/jpeg, image/gif">
+        </div>
+
+        {{ form.bio }}
+        <button type="submit" class="button registration-button">отправить на модерацию</button>
+
+        </form>
+        
+      </div>      
+    </div>
+  </div>
+{% endblock %}
+

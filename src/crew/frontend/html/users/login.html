@@ -1,17 +1,28 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Регистрация</title>
-  </head>
-  <body>
-    <form action="{% url "login" %}" method="post">
-        {% csrf_token %}  
-      <input type="text" name="email" value="{{ email|default:"" }}" placeholder="your@gmail.com" class="login-email" required>
-      <button type="submit" class="button login-button" style="min-width: 200px;">🤙 Войти</button>
-    </form>
-    {% if email_not_confirmed %}
-    Сначала подтверди почту, письмо уже летит к тебе.
-    {% endif %}
-  </body>
-</html>
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+  <div class="main">
+    <div class="container">
+      <div class="main-content">
+        <img src="{% static 'img/login_image.png' %}" class="login-image">
+
+        <form action="{% url "login" %}" method="post" class="login-form">
+          {% csrf_token %}  
+          <input type="text" name="email" value="{{ email|default:"" }}" placeholder="your@gmail.com" class="login-email" required>
+          <button type="submit" class="button login-button">🤙 Отправить</button>
+        </form>
+
+        {% if error %}
+          <button class="error">⛔ cначала подтверди почту, письмо уже летит к тебе ⛔</button>
+          <div></div>
+        {% endif %}
+
+        <a href="{% url 'registration' %}">
+          <button class="button redirect-to-reg">📝 пройти регистрацию</button>
+        </a>
+      </div>      
+    </div>
+  </div>
+{% endblock %}
+
 

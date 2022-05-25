@@ -1,16 +1,15 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
-from django.http.response import Http404
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import DetailView
 from django.views.generic.edit import FormView, UpdateView
 
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, UserProfileEdit
 from .models import LoginCode, User
 from .services import initiate_email_confirmation, finish_email_confirmation, \
     send_login_code_to_user
-from crew.settings import STATUS_ON_MODERATION    
+from crew.settings import STATUS_ON_MODERATION
 from utils.notifications import notify_staff_approve_user, \
     notify_user_profile_approve_decision
 from utils.decorators import staff_only
@@ -25,7 +24,7 @@ class UserRegistrationView(FormView):
 
     def form_valid(self, form):
         user = form.save()
-        
+
         notify_staff_approve_user(user)
         # Creating user-code object and sending letter to user email
         initiate_email_confirmation(user)
@@ -43,8 +42,8 @@ class EmailConfirmationView(View):
         confirmation_code = self.kwargs['confirmation_code']
 
         # Turning user.is_active on True and deleting user-code object
-        user = finish_email_confirmation(confirmation_code)
-        
+        finish_email_confirmation(confirmation_code)
+
         return HttpResponse("Почта подтверждена.")
 
 
@@ -70,7 +69,7 @@ class LoginView(View):
         initiate_email_confirmation(user)
 
         return render(request, "users/login.html", {
-                'email_not_confirmed':  True,
+                'error':  'some error occured',
             })
 
 
@@ -85,7 +84,7 @@ class LoginCodeView(View):
         user = authenticate(email=email, code=code)
         if user:
             login(request, user)
-            return HttpResponse('все получилось!!!')
+            return redirect('events')
 
         return HttpResponse('нЕ РоБоТаИт(((((:((((')
 
@@ -107,14 +106,14 @@ class UserDetailView(DetailView):
         return super().get(request, username, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)        
+        context = super().get_context_data(**kwargs)
         context['request_user'] = self.request.user
         return context
 
     def get_object(self):
         username = self.kwargs.get('username')
         user = User.get_user_by_username(username)
-        if (user.is_approved() or self.request.user.is_staff 
+        if (user.is_approved() or self.request.user.is_staff
                 or self.request.user == user):
             return user
 
@@ -122,9 +121,10 @@ class UserDetailView(DetailView):
 
 
 class UserProfileEditView(UpdateView):
-    model = User
-    object_context_name ='user'
-    fields = ['full_name', 'email', 'bio']
+    # model = User
+    form_class = UserProfileEdit
+    object_context_name = 'user'
+    # fields = ['full_name', 'email', 'bio']
     template_name = 'users/profile_edit.html'
     success_url = '/user/me'
 
@@ -158,7 +158,7 @@ def user_approve(request, username):
         user.approve()
 
         notify_user_profile_approve_decision(user)
-        
+
         return redirect('profile', username)
 
     raise Exception('u r not allowed to be here zhulic')
@@ -167,14 +167,14 @@ def user_approve(request, username):
 @staff_only
 def user_decline(request, username):
     user = User.get_user_by_username(username)
-    
+
     if request.method == 'GET':
         return render(request, 'users/user_decline.html', {'user': user})
-   
+
     if not user.is_declined():
         user.decline()
-        
+
         comment = request.POST.get('comment')
         notify_user_profile_approve_decision(user, comment=comment)
 
-    return redirect('profile', username)   
+    return redirect('profile', username)

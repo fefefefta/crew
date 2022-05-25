@@ -1,14 +1,18 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Регистрация</title>
-  </head>
-  <body>
-    <form action="{% url "login_code" %}" method="post">
-        {% csrf_token %}
-        <input type="text" inputmode="numeric" pattern="[0-9]*" name="code" placeholder="000000" class="login-code-input" autocomplete="off" autofocus>
-        <input type="hidden" name="email" value="{{ email }}">
-        <button type="submit" class="button login-code-button">Войти</button>
-    </form>
-  </body>
-</html>
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+  <div class="main">
+    <div class="container">
+      <div class="main-content">
+        <img src="{% static 'img/login_image.png' %}" class="login-image">
+          <form action="{% url "login_code" %}" method="post" class="login-form">
+            {% csrf_token %}  
+            <input type="text" inputmode="numeric" pattern="[0-9]*" name="code" placeholder="000000" autocomplete="off" autofocus class="login-email login-code-input" required>
+            <input type="hidden" name="email" value="{{ email }}">
+            <button type="submit" class="button login-button login-code-button">🎉 Войти</button>
+          </form>
+        <a href="{% url 'login' %}"><button class="button redirect-to-reg">👈 назад</button></a>
+      </div>      
+    </div>
+  </div>
+{% endblock %}

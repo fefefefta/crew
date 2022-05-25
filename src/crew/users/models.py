@@ -20,7 +20,9 @@ class User(AbstractUser):
     bio = models.TextField(null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False) 
+    # Email activity indicator
+    is_active = models.BooleanField(default=False)
+    # To moderate profiles
     moderation_status = models.CharField(
         max_length=32,
         default=STATUS_ON_MODERATION,
@@ -28,17 +30,10 @@ class User(AbstractUser):
 
     def activate(self):
         self.is_active = True
-    
+
     def deactivate(self):
         self.is_active = False
     
-    def get_link_to_user(self):
-        """Return absolute link to user"""
-        relative_link_to_user = reverse('profile', args=[self.username])
-        absolite_link_to_user = f"{CREW_DOMAIN}{relative_link_to_user}"
-
-        return absolite_link_to_user
-
     def is_approved(self):
         return True if self.moderation_status == STATUS_APPROVED else False
 
@@ -46,9 +41,24 @@ class User(AbstractUser):
         return True if self.moderation_status == STATUS_DECLINED else False
 
     def is_on_moderation(self):
-        return (True if self.moderation_status == STATUS_ON_MODERATION 
-                    else False)
- 
+        return (True if self.moderation_status == STATUS_ON_MODERATION
+                else False)
+
+    def approve(self):
+        self.moderation_status = STATUS_APPROVED
+        self.save()
+
+    def decline(self):
+        self.moderation_status = STATUS_DECLINED
+        self.save()
+    
+    def get_link_to_user(self) -> str:
+        """Return absolute link to user"""
+        relative_link_to_user = reverse('profile', args=[self.username])
+        absolite_link_to_user = f"{CREW_DOMAIN}{relative_link_to_user}"
+
+        return absolite_link_to_user
+
     @classmethod
     def get_user_by_email(cls, email: str):
         try:
@@ -65,15 +75,7 @@ class User(AbstractUser):
         except cls.DoesNotExist:
             raise Exception('no user with that username')
 
-        return user    
-    
-    def approve(self):
-        self.moderation_status = STATUS_APPROVED
-        self.save()
-
-    def decline(self):
-        self.moderation_status = STATUS_DECLINED
-        self.save()
+        return user
 
     def __repr__(self):
         return "User(username={}, full_name={}, email={})".format(
@@ -85,14 +87,14 @@ class User(AbstractUser):
 
 
 class EmailConfirmationCode(models.Model):
-    """Class defines an email confirmation code""" 
+    """Class defines an email confirmation code"""
 
     user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE)
     code = models.CharField(max_length=32, unique=True)
 
     @classmethod
     def create_for_user(cls, user):
-        """It creates secret_code by uuid4 for taken User instance, then create 
+        """It creates secret_code by uuid4 for taken User instance, then create
         EmailConfirmationCode object or update existing for user and returns
         secret_code"""
 
@@ -107,7 +109,7 @@ class EmailConfirmationCode(models.Model):
     @classmethod
     def check_code(cls, code):
         """
-        It takes confirmation code, returns a user from EmailConfirmationCode 
+        It takes confirmation code, returns a user from EmailConfirmationCode
         instance if it exists and delete that instance
         """
 
@@ -125,13 +127,13 @@ class EmailConfirmationCode(models.Model):
 class LoginCode(models.Model):
     """
     Class defines a code being mailed to user to log in
-    
+
     Attributes
         code: n-digit random code. n is a CODE_LENGTH constant
         user: an instance of the User model for which a login code is created
         created_at: datetime of creating
         expires_at: created_at + TIME_TO_LIVE constant
-        attempts: code entry attempt counter, not code request counter    
+        attempts: code entry attempt counter, not code request counter
 
     """
 
@@ -169,9 +171,9 @@ class LoginCode(models.Model):
     @classmethod
     def check_code(cls, user: User, code: str):
         """Compare last created code for user with taken code. If equal then it
-        delete all LoginCodes for user and return that user. If not or if 
+        delete all LoginCodes for user and return that user. If not or if
         some conditions not met then raise exceptions"""
-        
+
         last_code = cls._get_last_codes(user).first()
 
         if not last_code:
@@ -182,21 +184,21 @@ class LoginCode(models.Model):
 
         if code != last_code.code:
             last_code.attempts += 1
-            last_code.save()            
-            raise Exception('Invalid code') 
+            last_code.save()
+            raise Exception('Invalid code')
 
         cls.objects.filter(user=user).delete()
         return last_code.user
 
     @classmethod
     def _get_last_codes(cls, user: User):
-        """Takes User instance and returns recently created LoginCode 
+        """Takes User instance and returns recently created LoginCode
            instances for user"""
 
         return cls.objects.filter(
-                user=user, 
+                user=user,
                 created_at__gte=timezone.now() - cls.TIME_TO_LIVE
             ).order_by("-created_at")
-        
+
     def __repr__(self):
         return "LoginCode(username={})".format(self.user.username)

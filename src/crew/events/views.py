@@ -4,6 +4,7 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 
 from .models import Event
+from .forms import EventCreateForm
 from utils.notifications import notify_staff_to_publish, notify_user_publication_decision
 from crew.settings import STATUS_ON_MODERATION, STATUS_APPROVED, \
     STATUS_DECLINED
@@ -34,9 +35,9 @@ class EventDetailView(DetailView):
 
 
 class EventCreateView(CreateView):
-    model = Event
-    fields = ['title', 'text', 'participants_limit', 'price', 'link_to_chat', 
-        'event_date']
+    form_class = EventCreateForm
+    # fields = ['title', 'text', 'participants_limit', 'price', 'link_to_chat', 
+    #     'event_date']
     template_name = 'events/new.html'
     success_url = '../'
 
@@ -51,28 +52,28 @@ class EventCreateView(CreateView):
 
 
 class EventEditView(UpdateView):
-    model = Event
+    form_class = EventCreateForm
     object_context_name = 'event'
-    fields = ['title', 'text', 'participants_limit', 'price', 'link_to_chat', 
-        'event_date']
+    # fields = ['title', 'text', 'participants_limit', 'price', 'link_to_chat', 
+    #     'event_date']
     template_name = 'events/event_edit.html'
     success_url = '../'
 
     def get_object(self):
-        event = super().get_object()
+        event = Event.objects.get(pk=self.kwargs.get('pk'))
         if event.author == self.request.user and not event.is_on_moderation():
             return event
 
         raise Exception('u r not allowed to be here zhulic')
 
     def form_valid(self, form):
-       self.object = form.save(commit=False)
-       self.object.moderation_status = STATUS_ON_MODERATION
-       self.object.save()
+        self.object = form.save(commit=False)
+        self.object.moderation_status = STATUS_ON_MODERATION
+        self.object.save()
 
-       notify_staff_to_publish(self.object)
+        notify_staff_to_publish(self.object)
 
-       return super().form_valid(form)
+        return super().form_valid(form)
 
 
 @staff_only

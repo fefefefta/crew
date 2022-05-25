@@ -1,0 +1,67 @@
+<!-- {% load static %} -->
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">	
+	<link rel="stylesheet" href="https://unpkg.com/flexboxgrid2@7.2.1/flexboxgrid2.css">
+	<link rel="stylesheet" type="text/css" href="../../static/css/base.css">
+	<!-- <link rel="stylesheet" type="text/css" href="{% static 'base.css' %}"> -->
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+	<title>CREW | ищи компанию</title>
+</head>
+<body>
+
+	<div class="header">
+		<div class="container">
+			<div class="header-content">
+				
+					<!-- <img src="img/logo.png" class="uber-logo"> -->
+					<div class="crew-logo">
+						<a href="#anchor">⚠️ crew</a>
+					</div>
+				<div class="client-block">
+					<!-- <button class="login" onclick="window.location.href = '#'"><div class="login-text">Войти</div></button> -->
+					<div class="login">
+						<a href="#anchor">vhod 🏃</a>
+					</div>
+					<!-- <a href="#" class="basket">
+						<div class="hidden-xs"><img src="img/basket.png" class="basket-img"></div>
+					</a> -->
+				</div>	
+			</div>
+		</div>
+	</div>
+
+	<div class="main">
+		<div class="container">
+			<div class="main-content">
+				<img src="../../static/img/login_image.png" class="login-image">
+				<!-- <div class="login-form"> -->
+					<form action="{% url "login" %}" method="post" class="login-form">
+					        <!-- {% csrf_token %}   -->
+					  <input type="text" name="email" value="{{ email|default:"" }}" placeholder="your@gmail.com" class="login-email" required>
+					  <button type="submit" class="button login-button">🤙 Отправить</button>
+					</form>
+					    <!-- {% if email_not_confirmed %}
+					    Сначала подтверди почту, письмо уже летит к тебе.
+					    {% endif %} -->
+				<!-- </div> -->
+				<button class="redirect-to-reg">📝 пройти регистрацию</button>
+
+			</div>	    
+		</div>
+	</div>
+
+	<div class="footer">
+		<div class="container">
+			<div class="footer-content">
+				<div class="footer-about">🤖 о проекте)</div>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>

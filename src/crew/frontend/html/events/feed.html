@@ -1,8 +1,46 @@
+{% extends "users/base.html" %}
 {% block content %}
-    <h2>Events</h2>
-    <ul>
+  
+
+  <div class="main">
+    <div class="container">
+      <div class="main-content">
+
+        <form class="search-form">
+          <input class="search-bar" type="text" name="search-bar" placeholder="поиск">
+
+          <select class="search-type-filter" name="search-type-filter">
+            <option value="" selected>выбрать тип</option>
+            <option value="4">1</option>
+            <option value="3">1</option>
+            <option value="2">1</option>
+            <option value="1">1</option>
+          </select>
+
+          <select class="search-tag-filter" name="search-tag-filter" size="1">
+            <option value="" selected>выбрать теги</option>
+            <option value="4">2</option>
+            <option value="3">3</option>
+            <option value="2">4</option>
+            <option value="1">1</option>
+          </select>
+
+          <!-- <button type="submit" class="button search-button">🎉 Поиск</button> -->
+        </form>
+
         {% for event in object_list %}
-            <li><a href="{% url 'event' event.pk %}">{{ event.title }}</a></li>
-        {% endfor %}
-    </ul>
+          <a href="{% url "event" event.pk %}">
+            <div class="event-box">
+              <div class="event-date">{{ event.event_date|date }}</div>
+              <div class="event-info">
+                <span class="event-title">{{ event.title }}</span>
+              </div>
+            </div>
+          </a>
+        {% endfor %}        
+      </div>  
+    </div>
+  </div>  
+  
+
 {% endblock %}

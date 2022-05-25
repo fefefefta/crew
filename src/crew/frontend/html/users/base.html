@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">	
+	<link rel="stylesheet" href="https://unpkg.com/flexboxgrid2@7.2.1/flexboxgrid2.css">
+	<!-- <link rel="stylesheet" type="text/css" href="../../static/css/base.css"> -->
+	<link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+	<title>your crew 🌍</title>
+</head>
+<body>
+
+	<div class="header">
+		<div class="container">
+			<div class="header-content">
+				<a href="{% url 'events' %}" class="header-logo">
+					<!-- <img src="img/logo.png" class="uber-logo"> -->
+					<div class="crew-logo">⚠️ crew</div>
+			  </a>
+				<div class="client-block">
+					<!-- <button class="login" onclick="window.location.href = '#'"><div class="login-text">Войти</div></button> -->
+					<a href="{% url 'login' %}">
+					  <div class="login">vhod 🏃</div>
+				  </a>
+					<!-- <a href="#" class="basket">
+						<div class="hidden-xs"><img src="img/basket.png" class="basket-img"></div>
+					</a> -->
+				</div>	
+			</div>
+		</div>
+	</div>		
+
+	{% block content %}
+  {% endblock %}
+
+	<div class="footer">
+		<div class="container">
+			<div class="footer-content">
+				<a href="{% url 'events' %}">
+				  <div class="footer-about">🤖 about</div>
+			  </a>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>
